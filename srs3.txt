@@ -1,0 +1,343 @@
+Software Requirements Specification (SRS)
+Project Title
+
+Multilingual News Simplifier
+
+1. Introduction
+1.1 Purpose
+
+The purpose of the Multilingual News Simplifier system is to help users easily understand news articles regardless of language or complexity.
+
+The system will automatically fetch global news from popular news websites and allow users to translate, summarize, and simplify articles for better comprehension.
+
+This application aims to solve problems such as:
+
+Language barriers in global news
+
+Information overload from long articles
+
+Difficulty understanding complex terms and topics
+
+1.2 Scope
+
+The Multilingual News Simplifier is a web-based application that allows users to:
+
+View top global news headlines on the homepage
+
+Fetch news from popular global news sources
+
+Input news articles manually or via URL
+
+Translate articles into different languages
+
+Generate concise summaries
+
+Simplify complex sentences and terms
+
+Extract key information from the article
+
+Listen to summarized news in audio format
+
+The system will act as an AI-powered news assistant that simplifies and personalizes news consumption.
+
+1.3 Definitions
+Term	Description
+NLP	Natural Language Processing used for text analysis
+API	Application Programming Interface used to access external services
+Translation	Converting text from one language to another
+Summarization	Shortening text while keeping the main meaning
+Entity	Important names like people, places, organizations
+2. Overall Description
+2.1 Product Perspective
+
+The Multilingual News Simplifier is a web application that integrates with external APIs to fetch news articles and process them using AI services.
+
+The system architecture includes:
+
+Frontend user interface
+
+Backend processing server
+
+News APIs
+
+Translation APIs
+
+AI summarization services
+
+2.2 Product Functions
+
+The system will perform the following functions:
+
+Fetch global news automatically from news APIs
+
+Display top headlines on the homepage
+
+Allow users to input article text or URL
+
+Extract article content
+
+Translate articles into selected languages
+
+Generate summaries of the article
+
+Simplify complex sentences
+
+Identify key information from the article
+
+Provide audio summaries
+
+Allow users to switch languages dynamically
+
+2.3 User Classes
+User	Description
+General Reader	Wants quick understanding of news
+Students	Need simplified explanations
+Researchers	Need summarized information
+Non-native readers	Need translation support
+2.4 Operating Environment
+
+The system will run on:
+
+Web browsers (Chrome, Edge, Firefox, Safari)
+
+Desktop computers
+
+Mobile devices
+
+Technology environment:
+
+Frontend: React or Next.js
+
+Backend: Node.js / Express
+
+APIs: News API, Translation API, AI APIs
+
+Database: Optional for storing user preferences or history
+
+3. Functional Requirements
+3.1 Article Input
+
+The system shall allow users to input news articles using the following methods:
+
+1. Paste Article Text
+
+Users can paste the full article text into an input field.
+
+2. Enter Article URL
+
+Users can paste a news article link.
+The system will automatically extract the article content.
+
+3. Automatic Global News Fetching
+
+The system shall automatically fetch news articles from global news sources using APIs.
+
+Examples of sources include:
+
+BBC News
+
+CNN
+
+Reuters
+
+Al Jazeera
+
+3.2 Homepage News Dashboard
+
+The homepage shall display:
+
+Top global news headlines
+
+Latest trending news
+
+News categorized by topics
+
+Categories may include:
+
+Technology
+
+Politics
+
+Business
+
+Sports
+
+Science
+
+Health
+
+Each news card will display:
+
+Title
+
+Source name
+
+Published date
+
+Short preview
+
+Users can click the news card to open the News Simplifier view.
+
+3.3 Article Translation
+
+The system shall translate the selected article into the user’s preferred language.
+
+Supported languages may include:
+
+English
+
+Hindi
+
+Spanish
+
+Marathi
+
+French
+
+The translated article will be displayed instantly.
+
+3.4 Article Summarization
+
+The system shall generate concise summaries of news articles.
+
+Types of summaries may include:
+
+Bullet point summary
+
+Short paragraph summary
+
+30-second quick read summary
+
+Example:
+
+Topic: AI Regulation
+
+• Government discussing new AI safety rules
+• Tech companies may face stricter policies
+• Debate continues in parliament
+3.5 Simplified Explanation
+
+The system shall simplify complex sentences and technical terms.
+
+Example:
+
+Original:
+
+The central bank increased interest rates to curb inflation.
+
+Simplified:
+
+The main bank of the country made loans more expensive to slow rising prices.
+3.6 Key Information Extraction
+
+The system shall automatically identify important elements in the article.
+
+Example output:
+
+People: Elon Musk  
+Location: United States  
+Event: AI regulation debate  
+Date: March 2026
+3.7 Audio News Summary
+
+The system shall allow users to listen to summarized news using text-to-speech.
+
+Example:
+
+▶ Play 30-second news summary
+3.8 Language Switching
+
+Users shall be able to switch languages dynamically.
+
+Example:
+
+English | Hindi | Marathi | Spanish
+
+The article and summary will update instantly.
+
+4. Non-Functional Requirements
+4.1 Performance
+
+The system should process and generate summaries within 3–5 seconds.
+
+4.2 Usability
+
+The user interface should be simple and easy for non-technical users.
+
+4.3 Scalability
+
+The system should support multiple users accessing the platform simultaneously.
+
+4.4 Security
+
+User data and article inputs should be processed securely.
+
+4.5 Reliability
+
+The system should provide accurate translation and summarization results.
+
+5. System Architecture
+High-Level Workflow
+User opens homepage
+        ↓
+Global news fetched via News API
+        ↓
+User selects article OR inputs URL/text
+        ↓
+Article extraction
+        ↓
+Translation API
+        ↓
+AI summarization
+        ↓
+Simplification + key information extraction
+        ↓
+Display results / audio playback
+6. External Interface Requirements
+6.1 User Interface
+
+The interface will include:
+
+Homepage news feed
+
+Search or article input box
+
+Language selector
+
+Translate button
+
+Summarize button
+
+Simplify button
+
+Audio playback button
+
+Result display section
+
+6.2 API Integration
+
+The system may integrate with APIs such as:
+
+NewsAPI for global news
+
+GNews for news headlines
+
+Translation APIs
+
+AI summarization APIs
+
+Text-to-speech APIs
+
+7. Future Enhancements
+
+Future improvements may include:
+
+News bias detection
+
+Multi-source comparison
+
+Personalized news recommendations
+
+Mobile application
+
+Offline news summaries
