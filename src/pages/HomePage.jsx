@@ -59,6 +59,11 @@ export default function HomePage() {
         };
 
         sessionStorage.setItem('selectedArticle', JSON.stringify(article));
+        // Store preferred language so ArticlePage can auto-translate
+        const savedLang = sessionStorage.getItem('preferredLanguage');
+        if (!savedLang) {
+            sessionStorage.setItem('preferredLanguage', 'Hindi');
+        }
         navigate('/article/custom');
     }
 
