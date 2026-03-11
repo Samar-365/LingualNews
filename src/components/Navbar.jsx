@@ -10,10 +10,10 @@ export default function Navbar({ language, onLanguageChange }) {
     return (
         <nav className="navbar" id="navbar">
             <div className="container">
-                <Link to="/" className="navbar__logo">
+                <a href="/" className="navbar__logo">
                     <span className="navbar__logo-icon">⬡</span>
                     <span>LINGUAL<span style={{ color: 'var(--amber)' }}>NEWS</span></span>
-                </Link>
+                </a>
 
                 <button
                     className="mobile-menu-btn"
@@ -25,26 +25,15 @@ export default function Navbar({ language, onLanguageChange }) {
 
                 <ul className={`navbar__links ${menuOpen ? 'navbar__links--open' : ''}`}>
                     <li>
-                        <Link
-                            to="/"
+                        <a
+                            href="/"
                             className={location.pathname === '/' ? 'active' : ''}
                             onClick={() => setMenuOpen(false)}
                         >
                             Home
-                        </Link>
+                        </a>
                     </li>
-                    <li>
-                        <select
-                            className="lang-selector"
-                            value={language}
-                            onChange={(e) => onLanguageChange(e.target.value)}
-                            id="global-language-selector"
-                        >
-                            {LANGUAGES.map(lang => (
-                                <option key={lang} value={lang}>{lang}</option>
-                            ))}
-                        </select>
-                    </li>
+
                 </ul>
             </div>
         </nav>

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    translateArticle,
     summarizeArticle,
     simplifyArticle,
     extractKeyInfo
 } from '../services/aiService';
+import { translateArticle } from '../services/translationService';
 import { speak, stop, isSpeaking, getLangCode } from '../services/ttsService';
 
 const LANGUAGES = ['English', 'Hindi', 'Spanish', 'Marathi', 'French'];

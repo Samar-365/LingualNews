@@ -4,7 +4,7 @@ const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemi
 /**
  * Call Gemini API with a prompt
  */
-async function callGemini(prompt) {
+export async function callGemini(prompt) {
     if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
         throw new Error('GEMINI_API_KEY_NOT_SET');
     }
@@ -30,9 +30,9 @@ async function callGemini(prompt) {
 }
 
 /**
- * Translate article text to target language
+ * Translate article text to target language (Gemini fallback)
  */
-export async function translateArticle(text, targetLang) {
+export async function translateWithGemini(text, targetLang) {
     const prompt = `Translate the following news article text to ${targetLang}. Only output the translated text, nothing else.\n\n${text}`;
     return await callGemini(prompt);
 }
