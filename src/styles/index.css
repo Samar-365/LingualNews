@@ -712,6 +712,14 @@ h3 { font-size: 0.85rem; }
   box-shadow: 0 0 10px var(--amber-glow);
 }
 
+.toolbar__btn--cyan:hover,
+.toolbar__btn--cyan.toolbar__btn--active {
+  color: var(--cyan);
+  border-color: var(--cyan-dim);
+  background: rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.3);
+}
+
 .toolbar__separator {
   width: 1px;
   background: var(--border-color);

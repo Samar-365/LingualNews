@@ -325,6 +325,22 @@ export default function ArticlePage({ language }) {
                             ✨ Simplify
                         </button>
 
+                        {article.inputUrl && (
+                            <>
+                                <div className="toolbar__separator"></div>
+                                <a
+                                    className="toolbar__btn toolbar__btn--cyan"
+                                    href={article.inputUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    id="read-original-btn"
+                                    style={{ textDecoration: 'none' }}
+                                >
+                                    🔗 Read Original
+                                </a>
+                            </>
+                        )}
+
 
 
                         <div className="toolbar__separator"></div>
