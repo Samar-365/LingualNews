@@ -46,10 +46,10 @@ export async function translateArticle(text, targetLang) {
         const result = await response.json();
         return result.data?.text || text;
     } catch (err) {
-        console.warn('Lingo.dev translation failed, falling back to Gemini:', err.message);
+        console.warn('Lingo.dev translation failed, falling back to Groq:', err.message);
 
-        // Fallback to Gemini
-        const { translateWithGemini } = await import('./aiService.js');
-        return await translateWithGemini(text, targetLang);
+        // Fallback to Groq
+        const { translateWithGroq } = await import('./aiService.js');
+        return await translateWithGroq(text, targetLang);
     }
 }

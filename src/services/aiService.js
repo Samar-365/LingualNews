@@ -1,75 +1,38 @@
-import { GoogleGenAI } from '@google/genai';
+import Groq from 'groq-sdk';
 
-const GEMINI_KEYS = [
-    import.meta.env.VITE_GEMINI_API_KEY,
-    import.meta.env.VITE_GEMINI_API_KEY_2,
-].filter(k => k && k !== 'YOUR_GEMINI_API_KEY_HERE');
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 
-const MODEL = 'gemini-3-flash-preview';
+const MODEL = 'llama-3.1-8b-instant';
 
 /**
- * Call Gemini API with a prompt using the official SDK.
- * Falls back to the second API key if the first is rate-limited.
+ * Call Groq API with a prompt using the official SDK.
  */
-export async function callGemini(prompt) {
-    if (GEMINI_KEYS.length === 0) {
-        throw new Error('GEMINI_API_KEY_NOT_SET');
+export async function callGroq(prompt) {
+    if (!GROQ_API_KEY) {
+        throw new Error('GROQ_API_KEY_NOT_SET');
     }
-
-    let lastError = null;
-
-    for (const key of GEMINI_KEYS) {
-        try {
-            const ai = new GoogleGenAI({ apiKey: key });
-            const response = await ai.models.generateContent({
-                model: MODEL,
-                contents: prompt,
-                config: {
-                    temperature: 0.4,
-                    maxOutputTokens: 2048,
-                },
-            });
-            return response.text || '';
-        } catch (err) {
-            console.warn(`Gemini (key …${key.slice(-4)}) failed: ${err.message}`);
-            lastError = err;
-
-            // If rate-limited, try next key
-            if (err.message?.includes('429') || err.message?.includes('503') || err.message?.includes('RESOURCE_EXHAUSTED')) {
-                continue;
-            }
-
-            // Other errors — throw immediately
-            throw err;
-        }
-    }
-
-    // All keys exhausted — wait and retry once
-    console.warn('All API keys rate-limited. Waiting 10s before final retry…');
-    await new Promise(resolve => setTimeout(resolve, 10000));
 
     try {
-        const ai = new GoogleGenAI({ apiKey: GEMINI_KEYS[0] });
-        const response = await ai.models.generateContent({
+        const groq = new Groq({ apiKey: GROQ_API_KEY, dangerouslyAllowBrowser: true });
+        const response = await groq.chat.completions.create({
             model: MODEL,
-            contents: prompt,
-            config: {
-                temperature: 0.4,
-                maxOutputTokens: 2048,
-            },
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.4,
+            max_tokens: 2048,
         });
-        return response.text || '';
-    } catch {
-        throw lastError || new Error('Gemini API is currently rate-limited. Please try again in a minute.');
+        return response.choices[0]?.message?.content || '';
+    } catch (err) {
+        console.warn(`Groq API failed.`, err);
+        throw new Error(`Groq API Error: ${err.message}`);
     }
 }
 
 /**
- * Translate article text to target language (Gemini fallback)
+ * Translate article text to target language (Groq fallback)
  */
-export async function translateWithGemini(text, targetLang) {
+export async function translateWithGroq(text, targetLang) {
     const prompt = `Translate the following news article text to ${targetLang}. Only output the translated text, nothing else.\n\n${text}`;
-    return await callGemini(prompt);
+    return await callGroq(prompt);
 }
 
 /**
@@ -92,7 +55,7 @@ export async function summarizeArticle(text, mode = 'bullet') {
         default:
             prompt = `Summarize the following news article concisely:\n\n${text}`;
     }
-    return await callGemini(prompt);
+    return await callGroq(prompt);
 }
 
 /**
@@ -100,7 +63,7 @@ export async function summarizeArticle(text, mode = 'bullet') {
  */
 export async function simplifyArticle(text) {
     const prompt = `Simplify the following news article so that it can be easily understood by a 12-year-old. Replace technical terms with simple explanations. Keep it informative but use everyday language.\n\n${text}`;
-    return await callGemini(prompt);
+    return await callGroq(prompt);
 }
 
 /**
@@ -119,7 +82,7 @@ Topics: [main topics/themes]
 Article:
 ${text}`;
 
-    const result = await callGemini(prompt);
+    const result = await callGroq(prompt);
 
     // Parse the result into structured data
     const info = {};

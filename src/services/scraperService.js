@@ -1,4 +1,4 @@
-import { callGemini } from './aiService';
+import { callGroq } from './aiService';
 
 /**
  * Fetch strategies — local proxy first (bypasses CORS + CDN), then external proxies.
@@ -31,7 +31,7 @@ const ACCESS_DENIED_PATTERNS = [
 /**
  * Scrape article content from a URL.
  * Uses multiple CORS proxies and robust HTML parsing to extract article text.
- * Falls back to Gemini AI for content extraction if heuristics fail.
+ * Falls back to Groq AI for content extraction if heuristics fail.
  *
  * @param {string} url - The article URL to scrape
  * @returns {Promise<{title: string, content: string, source: string, image: string|null}>}
@@ -53,12 +53,12 @@ export async function scrapeArticle(url) {
     // Extract main article content
     let content = extractContent(doc);
 
-    // If extraction yielded too little, try Gemini
+    // If extraction yielded too little, try Groq
     if (content.length < 100) {
         try {
-            content = await extractWithGemini(html, url);
+            content = await extractWithGroq(html, url);
         } catch {
-            // Gemini not available — continue with what we have
+            // Groq not available — continue with what we have
         }
     }
 
@@ -321,9 +321,9 @@ function extractTextFromElement(element) {
 }
 
 /**
- * Use Gemini to extract article content from raw HTML.
+ * Use Groq to extract article content from raw HTML.
  */
-async function extractWithGemini(html, url) {
+async function extractWithGroq(html, url) {
     // Truncate HTML to avoid token limits
     const truncatedHtml = html.substring(0, 15000);
 
@@ -339,7 +339,7 @@ HTML:
 ${truncatedHtml}`;
 
     try {
-        const result = await callGemini(prompt);
+        const result = await callGroq(prompt);
         if (result === 'NO_CONTENT' || result.length < 50) {
             return '';
         }
