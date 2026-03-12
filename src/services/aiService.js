@@ -1,32 +1,67 @@
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+import { GoogleGenAI } from '@google/genai';
+
+const GEMINI_KEYS = [
+    import.meta.env.VITE_GEMINI_API_KEY,
+    import.meta.env.VITE_GEMINI_API_KEY_2,
+].filter(k => k && k !== 'YOUR_GEMINI_API_KEY_HERE');
+
+const MODEL = 'gemini-3-flash-preview';
 
 /**
- * Call Gemini API with a prompt
+ * Call Gemini API with a prompt using the official SDK.
+ * Falls back to the second API key if the first is rate-limited.
  */
 export async function callGemini(prompt) {
-    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'YOUR_GEMINI_API_KEY_HERE') {
+    if (GEMINI_KEYS.length === 0) {
         throw new Error('GEMINI_API_KEY_NOT_SET');
     }
 
-    const response = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-                temperature: 0.4,
-                maxOutputTokens: 2048
-            }
-        })
-    });
+    let lastError = null;
 
-    if (!response.ok) {
-        throw new Error(`Gemini API error: ${response.status}`);
+    for (const key of GEMINI_KEYS) {
+        try {
+            const ai = new GoogleGenAI({ apiKey: key });
+            const response = await ai.models.generateContent({
+                model: MODEL,
+                contents: prompt,
+                config: {
+                    temperature: 0.4,
+                    maxOutputTokens: 2048,
+                },
+            });
+            return response.text || '';
+        } catch (err) {
+            console.warn(`Gemini (key …${key.slice(-4)}) failed: ${err.message}`);
+            lastError = err;
+
+            // If rate-limited, try next key
+            if (err.message?.includes('429') || err.message?.includes('503') || err.message?.includes('RESOURCE_EXHAUSTED')) {
+                continue;
+            }
+
+            // Other errors — throw immediately
+            throw err;
+        }
     }
 
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    // All keys exhausted — wait and retry once
+    console.warn('All API keys rate-limited. Waiting 10s before final retry…');
+    await new Promise(resolve => setTimeout(resolve, 10000));
+
+    try {
+        const ai = new GoogleGenAI({ apiKey: GEMINI_KEYS[0] });
+        const response = await ai.models.generateContent({
+            model: MODEL,
+            contents: prompt,
+            config: {
+                temperature: 0.4,
+                maxOutputTokens: 2048,
+            },
+        });
+        return response.text || '';
+    } catch {
+        throw lastError || new Error('Gemini API is currently rate-limited. Please try again in a minute.');
+    }
 }
 
 /**
