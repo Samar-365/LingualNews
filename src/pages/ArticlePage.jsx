@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     summarizeArticle,
-    simplifyArticle,
-    extractKeyInfo
+    simplifyArticle
 } from '../services/aiService';
 import { translateArticle } from '../services/translationService';
 import { speak, stop, isSpeaking, getLangCode } from '../services/ttsService';
@@ -24,7 +23,6 @@ export default function ArticlePage({ language }) {
     const [translatedText, setTranslatedText] = useState('');
     const [summary, setSummary] = useState('');
     const [simplified, setSimplified] = useState('');
-    const [keyInfo, setKeyInfo] = useState(null);
 
     // UI state
     const [activePanel, setActivePanel] = useState(null);
@@ -189,23 +187,7 @@ export default function ArticlePage({ language }) {
         }
     }
 
-    async function handleExtractKeyInfo() {
-        setActivePanel('extract');
-        setError('');
-        setLoading(true);
-        try {
-            const result = await extractKeyInfo(getArticleText());
-            setKeyInfo(result);
-        } catch (err) {
-            if (err.message === 'GEMINI_API_KEY_NOT_SET') {
-                setError('⚠ Gemini API key not configured. Add your key to the .env file.');
-            } else {
-                setError('Failed to extract key info. ' + err.message);
-            }
-        } finally {
-            setLoading(false);
-        }
-    }
+
 
     function handlePlayAudio() {
         if (isSpeaking()) {
@@ -343,13 +325,7 @@ export default function ArticlePage({ language }) {
                             ✨ Simplify
                         </button>
 
-                        <button
-                            className={`toolbar__btn ${activePanel === 'extract' ? 'toolbar__btn--active' : ''}`}
-                            onClick={handleExtractKeyInfo}
-                            id="extract-btn"
-                        >
-                            🔍 Key Info
-                        </button>
+
 
                         <div className="toolbar__separator"></div>
 
@@ -467,22 +443,7 @@ export default function ArticlePage({ language }) {
                     </div>
                 )}
 
-                {/* Key Info Result */}
-                {activePanel === 'extract' && keyInfo && !loading && (
-                    <div className="results-panel" id="keyinfo-result">
-                        <div className="results-panel__header">
-                            <span className="results-panel__title">🔍 Key Information</span>
-                        </div>
-                        <div className="key-info">
-                            {Object.entries(keyInfo).map(([key, value]) => (
-                                <div className="key-info__item" key={key}>
-                                    <div className="key-info__label">{key}</div>
-                                    <div className="key-info__value">{value}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
+
             </div>
         </div>
     );

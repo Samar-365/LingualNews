@@ -66,36 +66,4 @@ export async function simplifyArticle(text) {
     return await callGroq(prompt);
 }
 
-/**
- * Extract key information (people, places, events, dates)
- */
-export async function extractKeyInfo(text) {
-    const prompt = `Extract key information from the following news article. Return the result in this exact format (use "N/A" if not found):
 
-People: [names of people mentioned]
-Locations: [places mentioned]
-Organizations: [organizations mentioned]
-Events: [key events]
-Dates: [important dates mentioned]
-Topics: [main topics/themes]
-
-Article:
-${text}`;
-
-    const result = await callGroq(prompt);
-
-    // Parse the result into structured data
-    const info = {};
-    const lines = result.split('\n').filter(l => l.trim());
-    for (const line of lines) {
-        const colonIdx = line.indexOf(':');
-        if (colonIdx > 0) {
-            const key = line.substring(0, colonIdx).trim();
-            const value = line.substring(colonIdx + 1).trim();
-            if (key && value) {
-                info[key] = value;
-            }
-        }
-    }
-    return info;
-}
