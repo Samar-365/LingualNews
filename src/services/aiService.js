@@ -45,16 +45,32 @@ export async function summarizeArticle(text, mode = 'bullet', targetLang = 'Engl
     let prompt;
     switch (mode) {
         case 'bullet':
-            prompt = `Summarize the following news article as 4-6 concise bullet points in ${targetLang}. Each bullet should capture a key point. Format each bullet starting with "• ".\n\n${text}`;
+            prompt = `Read the following news article. Summarize it as 4-6 concise bullet points. Each bullet should capture a key point. Format each bullet starting with "• ". 
+CRITICAL: You MUST write the entire summary in ${targetLang}. Do not output the original language if it is different.
+
+Article:
+${text}`;
             break;
         case 'paragraph':
-            prompt = `Summarize the following news article in a single short paragraph (3-4 sentences max) in ${targetLang}. Be concise and focus on the most important information.\n\n${text}`;
+            prompt = `Read the following news article. Summarize it in a single short paragraph (3-4 sentences max). Be concise and focus on the most important information.
+CRITICAL: You MUST write the entire summary in ${targetLang}. Do not output the original language if it is different.
+
+Article:
+${text}`;
             break;
         case 'quick':
-            prompt = `Create a 30-second quick read summary of the following news article in ${targetLang}. It should be 2-3 sentences that capture the essential information a busy reader needs to know.\n\n${text}`;
+            prompt = `Read the following news article. Create a 30-second quick read summary (2-3 sentences) that captures the essential information a busy reader needs to know.
+CRITICAL: You MUST write the entire summary in ${targetLang}. Do not output the original language if it is different.
+
+Article:
+${text}`;
             break;
         default:
-            prompt = `Summarize the following news article concisely in ${targetLang}:\n\n${text}`;
+            prompt = `Summarize the following news article concisely. 
+CRITICAL: You MUST write the entire summary in ${targetLang}. Do not output the original language if it is different.
+
+Article:
+${text}`;
     }
     return await callGroq(prompt);
 }
@@ -63,7 +79,15 @@ export async function summarizeArticle(text, mode = 'bullet', targetLang = 'Engl
  * Simplify complex sentences in the article
  */
 export async function simplifyArticle(text, targetLang = 'English') {
-    const prompt = `Simplify the following news article so that it can be easily understood by a 12-year-old. Replace technical terms with simple explanations. Keep it informative but use everyday language. Output the text in ${targetLang}.\n\n${text}`;
+    const prompt = `You are a helpful translator and simplifier. Read the following news article. 
+Task:
+1. Simplify the text so a 12-year-old can easily understand it. Replace technical terms with simple words. Keep it informative but use everyday language.
+2. TRANSLATE the simplified text into ${targetLang}. 
+
+CRITICAL: The final output MUST be entirely written in ${targetLang}. Do not use the original language if it is not ${targetLang}.
+
+Article:
+${text}`;
     return await callGroq(prompt);
 }
 

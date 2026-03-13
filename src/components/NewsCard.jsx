@@ -30,8 +30,13 @@ export default function NewsCard({ article, index, onClick }) {
                     onError={(e) => { e.target.style.display = 'none'; }}
                 />
             )}
-            <div className="news-card__source">
-                {article.source?.name || 'Unknown Source'}
+            <div className="news-card__source" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{article.source?.name || 'Unknown Source'}</span>
+                {article.feedLanguage && article.feedLanguage !== 'English' && (
+                    <span style={{ fontSize: '0.8rem', color: 'var(--amber)', border: '1px solid var(--amber)', padding: '2px 6px', borderRadius: '4px' }}>
+                        {article.feedLanguage}
+                    </span>
+                )}
             </div>
             <h3 className="news-card__title">{article.title}</h3>
             <p className="news-card__desc">{article.description}</p>

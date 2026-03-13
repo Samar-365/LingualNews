@@ -3,6 +3,29 @@ import axios from 'axios';
 const API_KEY = import.meta.env.VITE_NEWS_API_KEY;
 const BASE_URL = 'https://newsapi.org/v2';
 
+const GNEWS_API_KEY = import.meta.env.VITE_GNEWS_API_KEY;
+const GNEWS_BASE_URL = 'https://gnews.io/api/v4';
+
+const CONTINENT_GNEWS_LANGS = {
+    all: ['en', 'es', 'fr', 'hi', 'ja', 'pt', 'de'],
+    north_america: ['en', 'es', 'fr'],
+    europe: ['en', 'fr', 'de', 'es'],
+    asia: ['hi', 'ja'], // regional asian languages
+    oceania: ['en'],
+    africa: ['en', 'fr', 'pt'], // Swahili not directly supported by gnews -> fallback to pt/fr/en
+    south_america: ['es', 'pt']
+};
+
+const GNEWS_LANG_TO_NAME = {
+    en: 'English',
+    es: 'Spanish',
+    fr: 'French',
+    de: 'German',
+    hi: 'Hindi',
+    ja: 'Japanese',
+    pt: 'Portuguese'
+};
+
 const CONTINENT_COUNTRY_MAP = {
     all: '',
     north_america: 'us',
@@ -102,13 +125,13 @@ function getTodayKey() {
  */
 function getCachedArticles(category, continent = 'all') {
     try {
-        const raw = localStorage.getItem(`news_cache_v2_${category}_${continent}`);
+        const raw = localStorage.getItem(`news_cache_v3_${category}_${continent}`);
         if (!raw) return null;
         const { date, articles } = JSON.parse(raw);
         // Only return from cache if we have actual articles to avoid getting stuck on an empty cache
         if (date === getTodayKey() && articles && articles.length > 0) return articles;
         // stale cache — different day or empty
-        localStorage.removeItem(`news_cache_v2_${category}_${continent}`);
+        localStorage.removeItem(`news_cache_v3_${category}_${continent}`);
         return null;
     } catch {
         return null;
@@ -121,7 +144,7 @@ function getCachedArticles(category, continent = 'all') {
 function setCachedArticles(category, continent, articles) {
     try {
         localStorage.setItem(
-            `news_cache_v2_${category}_${continent}`,
+            `news_cache_v3_${category}_${continent}`,
             JSON.stringify({ date: getTodayKey(), articles })
         );
     } catch {
@@ -155,7 +178,7 @@ function getFallbackData(category, continent) {
  * Fetch top headlines by category and continent (cached daily)
  */
 export async function fetchTopHeadlines(category = 'general', continent = 'all') {
-    // If no valid API key, return sample data
+    // If no valid NewsAPI key, return sample data directly
     if (!API_KEY || API_KEY === 'YOUR_NEWSAPI_KEY_HERE') {
         await new Promise(r => setTimeout(r, 800)); // simulate loading
         return getFallbackData(category, continent);
@@ -164,6 +187,40 @@ export async function fetchTopHeadlines(category = 'general', continent = 'all')
     // Check daily cache first
     const cached = getCachedArticles(category, continent);
     if (cached) return cached;
+
+    // Try GNews First if available
+    if (GNEWS_API_KEY && GNEWS_API_KEY !== 'YOUR_GNEWS_API_KEY_HERE') {
+        const langs = CONTINENT_GNEWS_LANGS[continent] || CONTINENT_GNEWS_LANGS.all;
+        const randomLangCode = langs[Math.floor(Math.random() * langs.length)];
+        const feedLanguageName = GNEWS_LANG_TO_NAME[randomLangCode];
+
+        try {
+            const gnewsParams = {
+                category: category === 'general' ? 'general' : category,
+                lang: randomLangCode,
+                max: 12,
+                apikey: GNEWS_API_KEY
+            };
+
+            const gnewsRes = await axios.get(`${GNEWS_BASE_URL}/top-headlines`, { params: gnewsParams });
+            if (gnewsRes.data && gnewsRes.data.articles && gnewsRes.data.articles.length > 0) {
+                const mappedArticles = gnewsRes.data.articles.map(a => ({
+                    source: { name: a.source?.name || 'GNews Source' },
+                    title: a.title,
+                    description: a.description,
+                    url: a.url,
+                    urlToImage: a.image, // GNews uses 'image'
+                    publishedAt: a.publishedAt,
+                    content: a.content,
+                    feedLanguage: feedLanguageName
+                }));
+                setCachedArticles(category, continent, mappedArticles);
+                return mappedArticles;
+            }
+        } catch (gnewsErr) {
+            console.error('GNews API failed, falling back to NewsAPI:', gnewsErr);
+        }
+    }
 
     try {
         const country = CONTINENT_COUNTRY_MAP[continent];
@@ -191,6 +248,8 @@ export async function fetchTopHeadlines(category = 'general', continent = 'all')
             console.warn(`No articles found for ${category} and ${country}. Falling back to sample data.`);
             articles = getFallbackData(category, continent);
         }
+
+
 
         setCachedArticles(category, continent, articles); // store for the rest of today
         return articles;

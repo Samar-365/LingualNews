@@ -21,7 +21,40 @@ export function speak(text, lang = 'en-US', onEnd = () => { }) {
     currentUtterance.onend = onEnd;
     currentUtterance.onerror = onEnd;
 
-    synth.speak(currentUtterance);
+    // Explicitly find and assign a voice for the requested language.
+    // Some browsers/OS combinations fail to play audio if the exact voice object isn't assigned,
+    // especially for regional variations.
+    let voices = synth.getVoices();
+    
+    // Fallback logic to get voices if they aren't loaded immediately (Safari/Chrome quirk)
+    if (voices.length === 0) {
+        synth.onvoiceschanged = () => {
+            voices = synth.getVoices();
+            assignVoiceAndSpeak(synth, currentUtterance, voices, lang);
+        };
+    } else {
+        assignVoiceAndSpeak(synth, currentUtterance, voices, lang);
+    }
+}
+
+function assignVoiceAndSpeak(synth, utterance, voices, targetLang) {
+    // 1. Try to find an exact match for the language code (e.g., 'es-ES')
+    let selectedVoice = voices.find(v => v.lang === targetLang);
+    
+    // 2. Try to find a partial match (e.g., 'es' in 'es-ES')
+    if (!selectedVoice) {
+        const shortLang = targetLang.split('-')[0];
+        selectedVoice = voices.find(v => v.lang.startsWith(shortLang));
+    }
+    
+    // 3. Fallback to Google's specific voices if available, or just take the first matching language
+    if (selectedVoice) {
+        utterance.voice = selectedVoice;
+    } else {
+        console.warn(`No specific TTS voice found for ${targetLang}. Falling back to system default.`);
+    }
+
+    synth.speak(utterance);
 }
 
 /**
@@ -68,8 +101,12 @@ export function getLangCode(langName) {
         'English': 'en-US',
         'Hindi': 'hi-IN',
         'Spanish': 'es-ES',
-        'Marathi': 'mr-IN',
-        'French': 'fr-FR'
+        'French': 'fr-FR',
+        'German': 'de-DE',
+        'Japanese': 'ja-JP',
+        'Portuguese': 'pt-PT',
+        'Swahili': 'sw-KE',
+        'Maori': 'mi-NZ'
     };
     return langMap[langName] || 'en-US';
 }

@@ -8,8 +8,6 @@ const LOCALE_MAP = {
     'English': 'en',
     'Hindi': 'hi',
     'Spanish': 'es',
-    'Marathi': 'mr',
-    'French': 'fr'
 };
 
 /**
@@ -53,3 +51,4 @@ export async function translateArticle(text, targetLang) {
         return await translateWithGroq(text, targetLang);
     }
 }
+

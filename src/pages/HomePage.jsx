@@ -40,6 +40,12 @@ export default function HomePage({ continent }) {
     function handleCardClick(article, index) {
         // Store article in sessionStorage so ArticlePage can read it
         sessionStorage.setItem('selectedArticle', JSON.stringify(article));
+        
+        // If the article has a specific feed language, set it as the preferred language so the article page translates to it
+        if (article.feedLanguage) {
+            sessionStorage.setItem('preferredLanguage', article.feedLanguage);
+        }
+        
         navigate(`/article/${index}`);
     }
 
