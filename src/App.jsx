@@ -7,7 +7,7 @@ import ArticlePage from './pages/ArticlePage';
 
 export default function App() {
     const [language, setLanguage] = useState('English');
-    const [continent, setContinent] = useState('All');
+    const [continent, setContinent] = useState('all');
 
     return (
         <Router>

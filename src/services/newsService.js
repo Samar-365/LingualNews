@@ -125,13 +125,13 @@ function getTodayKey() {
  */
 function getCachedArticles(category, continent = 'all') {
     try {
-        const raw = localStorage.getItem(`news_cache_v3_${category}_${continent}`);
+        const raw = localStorage.getItem(`news_cache_v4_${category}_${continent}`);
         if (!raw) return null;
         const { date, articles } = JSON.parse(raw);
         // Only return from cache if we have actual articles to avoid getting stuck on an empty cache
         if (date === getTodayKey() && articles && articles.length > 0) return articles;
         // stale cache — different day or empty
-        localStorage.removeItem(`news_cache_v3_${category}_${continent}`);
+        localStorage.removeItem(`news_cache_v4_${category}_${continent}`);
         return null;
     } catch {
         return null;
@@ -144,7 +144,7 @@ function getCachedArticles(category, continent = 'all') {
 function setCachedArticles(category, continent, articles) {
     try {
         localStorage.setItem(
-            `news_cache_v3_${category}_${continent}`,
+            `news_cache_v4_${category}_${continent}`,
             JSON.stringify({ date: getTodayKey(), articles })
         );
     } catch {
@@ -190,32 +190,76 @@ export async function fetchTopHeadlines(category = 'general', continent = 'all')
 
     // Try GNews First if available
     if (GNEWS_API_KEY && GNEWS_API_KEY !== 'YOUR_GNEWS_API_KEY_HERE') {
-        const langs = CONTINENT_GNEWS_LANGS[continent] || CONTINENT_GNEWS_LANGS.all;
-        const randomLangCode = langs[Math.floor(Math.random() * langs.length)];
-        const feedLanguageName = GNEWS_LANG_TO_NAME[randomLangCode];
-
         try {
-            const gnewsParams = {
-                category: category === 'general' ? 'general' : category,
-                lang: randomLangCode,
-                max: 12,
-                apikey: GNEWS_API_KEY
-            };
+            if (continent === 'all') {
+                // Fetch a mix of languages for 'all' continents
+                const mixLangs = ['en', 'hi', 'fr', 'es']; // Diverse subset to avoid rate limit spam
+                const fetchPromises = mixLangs.map(async (l) => {
+                    const req = await axios.get(`${GNEWS_BASE_URL}/top-headlines`, {
+                        params: {
+                            category: category === 'general' ? 'general' : category,
+                            lang: l,
+                            max: 3, // 3 articles per language = 12 total
+                            apikey: GNEWS_API_KEY
+                        }
+                    });
+                    return (req.data?.articles || []).map(a => ({
+                        source: { name: a.source?.name || 'GNews Source' },
+                        title: a.title,
+                        description: a.description,
+                        url: a.url,
+                        urlToImage: a.image,
+                        publishedAt: a.publishedAt,
+                        content: a.content,
+                        feedLanguage: GNEWS_LANG_TO_NAME[l]
+                    }));
+                });
 
-            const gnewsRes = await axios.get(`${GNEWS_BASE_URL}/top-headlines`, { params: gnewsParams });
-            if (gnewsRes.data && gnewsRes.data.articles && gnewsRes.data.articles.length > 0) {
-                const mappedArticles = gnewsRes.data.articles.map(a => ({
-                    source: { name: a.source?.name || 'GNews Source' },
-                    title: a.title,
-                    description: a.description,
-                    url: a.url,
-                    urlToImage: a.image, // GNews uses 'image'
-                    publishedAt: a.publishedAt,
-                    content: a.content,
-                    feedLanguage: feedLanguageName
-                }));
-                setCachedArticles(category, continent, mappedArticles);
-                return mappedArticles;
+                const resultsSet = await Promise.allSettled(fetchPromises);
+                const allMapped = [];
+
+                // Interleave the results so languages alternate in the feed
+                for (let i = 0; i < 3; i++) {
+                    resultsSet.forEach(res => {
+                        if (res.status === 'fulfilled' && res.value[i]) {
+                            allMapped.push(res.value[i]);
+                        }
+                    });
+                }
+
+                if (allMapped.length > 0) {
+                    setCachedArticles(category, continent, allMapped);
+                    return allMapped;
+                }
+
+            } else {
+                // Target specific continent language
+                const langs = CONTINENT_GNEWS_LANGS[continent] || ['en'];
+                const randomLangCode = langs[Math.floor(Math.random() * langs.length)];
+                const feedLanguageName = GNEWS_LANG_TO_NAME[randomLangCode];
+
+                const gnewsParams = {
+                    category: category === 'general' ? 'general' : category,
+                    lang: randomLangCode,
+                    max: 12,
+                    apikey: GNEWS_API_KEY
+                };
+
+                const gnewsRes = await axios.get(`${GNEWS_BASE_URL}/top-headlines`, { params: gnewsParams });
+                if (gnewsRes.data && gnewsRes.data.articles && gnewsRes.data.articles.length > 0) {
+                    const mappedArticles = gnewsRes.data.articles.map(a => ({
+                        source: { name: a.source?.name || 'GNews Source' },
+                        title: a.title,
+                        description: a.description,
+                        url: a.url,
+                        urlToImage: a.image, // GNews uses 'image'
+                        publishedAt: a.publishedAt,
+                        content: a.content,
+                        feedLanguage: feedLanguageName
+                    }));
+                    setCachedArticles(category, continent, mappedArticles);
+                    return mappedArticles;
+                }
             }
         } catch (gnewsErr) {
             console.error('GNews API failed, falling back to NewsAPI:', gnewsErr);
