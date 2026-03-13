@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const LANGUAGES = ['English', 'Hindi', 'Spanish', 'Marathi', 'French'];
+
 
 const CONTINENTS = [
     { id: 'all', label: 'All Continents' },

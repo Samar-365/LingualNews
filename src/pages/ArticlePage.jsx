@@ -8,7 +8,7 @@ import { translateArticle } from '../services/translationService';
 import { speak, stop, isSpeaking, getLangCode } from '../services/ttsService';
 import { scrapeArticle } from '../services/scraperService';
 
-const LANGUAGES = ['English', 'Hindi', 'Spanish', 'Marathi', 'French'];
+const LANGUAGES = ['English', 'Hindi', 'Spanish', 'Marathi', 'French', 'German', 'Japanese', 'Portuguese', 'Swahili', 'Maori'];
 
 export default function ArticlePage({ language }) {
     const navigate = useNavigate();
