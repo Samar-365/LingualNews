@@ -123,15 +123,15 @@ function getTodayKey() {
 /**
  * Read cached articles from localStorage (valid for today only)
  */
-function getCachedArticles(category, continent = 'all') {
+function getCachedArticles(category, continent = 'all', page = 1) {
     try {
-        const raw = localStorage.getItem(`news_cache_v4_${category}_${continent}`);
+        const raw = localStorage.getItem(`news_cache_v5_${category}_${continent}_${page}`);
         if (!raw) return null;
         const { date, articles } = JSON.parse(raw);
         // Only return from cache if we have actual articles to avoid getting stuck on an empty cache
         if (date === getTodayKey() && articles && articles.length > 0) return articles;
         // stale cache — different day or empty
-        localStorage.removeItem(`news_cache_v4_${category}_${continent}`);
+        localStorage.removeItem(`news_cache_v5_${category}_${continent}_${page}`);
         return null;
     } catch {
         return null;
@@ -141,10 +141,10 @@ function getCachedArticles(category, continent = 'all') {
 /**
  * Write articles to localStorage with today's date
  */
-function setCachedArticles(category, continent, articles) {
+function setCachedArticles(category, continent, page, articles) {
     try {
         localStorage.setItem(
-            `news_cache_v4_${category}_${continent}`,
+            `news_cache_v5_${category}_${continent}_${page}`,
             JSON.stringify({ date: getTodayKey(), articles })
         );
     } catch {
@@ -155,37 +155,39 @@ function setCachedArticles(category, continent, articles) {
 /**
  * Generate fallback data of a consistent length (12) by repeating sample articles
  */
-function getFallbackData(category, continent) {
+function getFallbackData(category, continent, page = 1) {
     let mockData = category === 'general' ? SAMPLE_ARTICLES : (CATEGORY_ARTICLES[category] || SAMPLE_ARTICLES.slice(0, 3));
     if (!mockData || mockData.length === 0) mockData = SAMPLE_ARTICLES;
 
     const count = 12; // Match the API pageSize
     const extendedData = [];
-    while (extendedData.length < count + mockData.length) {
+    while (extendedData.length < count * page + mockData.length) {
         extendedData.push(...mockData);
     }
 
+    const baseIndex = (page - 1) * count;
+
     if (continent !== 'all') {
         const continentIndex = Object.keys(CONTINENT_COUNTRY_MAP).indexOf(continent);
-        const startIndex = continentIndex % mockData.length;
+        const startIndex = baseIndex + (continentIndex % mockData.length);
         return extendedData.slice(startIndex, startIndex + count);
     }
     
-    return extendedData.slice(0, count);
+    return extendedData.slice(baseIndex, baseIndex + count);
 }
 
 /**
  * Fetch top headlines by category and continent (cached daily)
  */
-export async function fetchTopHeadlines(category = 'general', continent = 'all') {
+export async function fetchTopHeadlines(category = 'general', continent = 'all', page = 1) {
     // If no valid NewsAPI key, return sample data directly
     if (!API_KEY || API_KEY === 'YOUR_NEWSAPI_KEY_HERE') {
         await new Promise(r => setTimeout(r, 800)); // simulate loading
-        return getFallbackData(category, continent);
+        return getFallbackData(category, continent, page);
     }
 
     // Check daily cache first
-    const cached = getCachedArticles(category, continent);
+    const cached = getCachedArticles(category, continent, page);
     if (cached) return cached;
 
     // Try GNews First if available
@@ -199,6 +201,7 @@ export async function fetchTopHeadlines(category = 'general', continent = 'all')
                         params: {
                             category: category === 'general' ? 'general' : category,
                             lang: l,
+                            page: page,
                             max: 3, // 3 articles per language = 12 total
                             apikey: GNEWS_API_KEY
                         }
@@ -228,7 +231,7 @@ export async function fetchTopHeadlines(category = 'general', continent = 'all')
                 }
 
                 if (allMapped.length > 0) {
-                    setCachedArticles(category, continent, allMapped);
+                    setCachedArticles(category, continent, page, allMapped);
                     return allMapped;
                 }
 
@@ -241,6 +244,7 @@ export async function fetchTopHeadlines(category = 'general', continent = 'all')
                 const gnewsParams = {
                     category: category === 'general' ? 'general' : category,
                     lang: randomLangCode,
+                    page: page,
                     max: 12,
                     apikey: GNEWS_API_KEY
                 };
@@ -257,7 +261,7 @@ export async function fetchTopHeadlines(category = 'general', continent = 'all')
                         content: a.content,
                         feedLanguage: feedLanguageName
                     }));
-                    setCachedArticles(category, continent, mappedArticles);
+                    setCachedArticles(category, continent, page, mappedArticles);
                     return mappedArticles;
                 }
             }
@@ -270,6 +274,7 @@ export async function fetchTopHeadlines(category = 'general', continent = 'all')
         const country = CONTINENT_COUNTRY_MAP[continent];
         const params = {
             category,
+            page: page,
             pageSize: 12,
             apiKey: API_KEY
         };
@@ -290,18 +295,18 @@ export async function fetchTopHeadlines(category = 'general', continent = 'all')
         // fallback to the mock sample data to prevent the UI from showing empty states or loading indefinitely.
         if (articles.length === 0) {
             console.warn(`No articles found for ${category} and ${country}. Falling back to sample data.`);
-            articles = getFallbackData(category, continent);
+            articles = getFallbackData(category, continent, page);
         }
 
 
 
-        setCachedArticles(category, continent, articles); // store for the rest of today
+        setCachedArticles(category, continent, page, articles); // store for the rest of today
         return articles;
     } catch (error) {
         console.error('NewsAPI error:', error);
         
         // Final fallback in case of actual request error
-        return getFallbackData(category, continent);
+        return getFallbackData(category, continent, page);
     }
 }
 

@@ -16,25 +16,44 @@ const CATEGORIES = [
 export default function HomePage({ continent }) {
     const [articles, setArticles] = useState([]);
     const [activeCategory, setActiveCategory] = useState('general');
+    const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
     const [inputMode, setInputMode] = useState('url'); // 'url' or 'text'
     const [inputValue, setInputValue] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
-        loadArticles(activeCategory, continent);
+        setPage(1);
+        loadArticles(activeCategory, continent, 1, false);
     }, [activeCategory, continent]);
 
-    async function loadArticles(category, cont) {
-        setLoading(true);
+    async function loadArticles(category, cont, pageNum = 1, append = false) {
+        if (pageNum === 1) {
+            setLoading(true);
+        } else {
+            setLoadingMore(true);
+        }
+        
         try {
-            const data = await fetchTopHeadlines(category, cont);
-            setArticles(data);
+            const data = await fetchTopHeadlines(category, cont, pageNum);
+            if (append) {
+                setArticles(prev => [...prev, ...data]);
+            } else {
+                setArticles(data);
+            }
         } catch (err) {
             console.error('Failed to load articles:', err);
         } finally {
             setLoading(false);
+            setLoadingMore(false);
         }
+    }
+
+    function handleLoadMore() {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        loadArticles(activeCategory, continent, nextPage, true);
     }
 
     function handleCardClick(article, index) {
@@ -177,16 +196,35 @@ export default function HomePage({ continent }) {
                         <p className="empty-state__text">No articles found. Try a different category.</p>
                     </div>
                 ) : (
-                    <div className="news-grid">
-                        {articles.map((article, index) => (
-                            <NewsCard
-                                key={index}
-                                article={article}
-                                index={index}
-                                onClick={handleCardClick}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        <div className="news-grid">
+                            {articles.map((article, index) => (
+                                <NewsCard
+                                    key={index}
+                                    article={article}
+                                    index={index}
+                                    onClick={handleCardClick}
+                                />
+                            ))}
+                        </div>
+                        <div className="pagination" style={{ textAlign: 'center', marginTop: '3rem', marginBottom: '2rem' }}>
+                            <button 
+                                className="input-box__btn" 
+                                onClick={handleLoadMore} 
+                                disabled={loadingMore}
+                                style={{ borderRadius: 'var(--radius)', padding: '0.8rem 2rem', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                            >
+                                {loadingMore ? (
+                                    <>
+                                        <div className="loader__spinner" style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff' }}></div>
+                                        Loading...
+                                    </>
+                                ) : (
+                                    'Load More News'
+                                )}
+                            </button>
+                        </div>
+                    </>
                 )}
             </section>
         </main>
