@@ -3,7 +3,17 @@ import { Link, useLocation } from 'react-router-dom';
 
 const LANGUAGES = ['English', 'Hindi', 'Spanish', 'Marathi', 'French'];
 
-export default function Navbar({ language, onLanguageChange }) {
+const CONTINENTS = [
+    { id: 'all', label: 'All Continents' },
+    { id: 'north_america', label: 'North America' },
+    { id: 'europe', label: 'Europe' },
+    { id: 'asia', label: 'Asia' },
+    { id: 'oceania', label: 'Oceania' },
+    { id: 'africa', label: 'Africa' },
+    { id: 'south_america', label: 'South America' }
+];
+
+export default function Navbar({ language, onLanguageChange, continent, onContinentChange }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const location = useLocation();
 
@@ -24,6 +34,21 @@ export default function Navbar({ language, onLanguageChange }) {
                 </button>
 
                 <ul className={`navbar__links ${menuOpen ? 'navbar__links--open' : ''}`}>
+                    <li>
+                        <div className="navbar__filter">
+                            <select
+                                className="navbar__select"
+                                value={continent}
+                                onChange={(e) => onContinentChange(e.target.value)}
+                                id="continent-filter"
+                                aria-label="Filter by continent"
+                            >
+                                {CONTINENTS.map(c => (
+                                    <option key={c.id} value={c.id}>{c.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </li>
                     <li>
                         <a
                             href="/"

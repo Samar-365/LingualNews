@@ -3,13 +3,23 @@ import axios from 'axios';
 const API_KEY = import.meta.env.VITE_NEWS_API_KEY;
 const BASE_URL = 'https://newsapi.org/v2';
 
+const CONTINENT_COUNTRY_MAP = {
+    all: '',
+    north_america: 'us',
+    europe: 'gb',
+    asia: 'in',
+    oceania: 'au',
+    africa: 'za',
+    south_america: 'br'
+};
+
 // Fallback sample data for when API key is not configured
 const SAMPLE_ARTICLES = [
     {
         source: { name: 'BBC News' },
         title: 'Global Leaders Discuss AI Regulation at Summit',
         description: 'World leaders gathered to discuss the future of artificial intelligence regulation and its impact on society.',
-        url: 'https://example.com/1',
+        url: 'https://www.bbc.com/news',
         urlToImage: null,
         publishedAt: '2026-03-10T10:00:00Z',
         content: 'World leaders from over 40 countries convened at the Global AI Summit to discuss comprehensive frameworks for artificial intelligence regulation. The summit, held in Geneva, addressed concerns about AI safety, ethical deployment, and the economic impact of rapidly advancing AI technologies. Key proposals included mandatory safety testing for large AI models, transparency requirements for AI-generated content, and international cooperation on AI governance standards.'
@@ -18,7 +28,7 @@ const SAMPLE_ARTICLES = [
         source: { name: 'Reuters' },
         title: 'Breakthrough in Quantum Computing Achieves New Milestone',
         description: 'Scientists announce a major breakthrough in quantum computing that could revolutionize data processing.',
-        url: 'https://example.com/2',
+        url: 'https://www.reuters.com/',
         urlToImage: null,
         publishedAt: '2026-03-10T08:30:00Z',
         content: 'A team of researchers at MIT has achieved a groundbreaking milestone in quantum computing, successfully maintaining quantum coherence for over 10 minutes at near room temperature. This development significantly surpasses previous records and could pave the way for practical quantum computers. The team used a novel approach combining topological qubits with error-correction algorithms, potentially making quantum computing accessible for everyday applications including drug discovery, climate modeling, and cryptography.'
@@ -27,7 +37,7 @@ const SAMPLE_ARTICLES = [
         source: { name: 'CNN' },
         title: 'New Space Mission to Explore Jupiter\'s Moon Europa',
         description: 'NASA announces a new mission to explore Europa, one of Jupiter\'s most promising moons for finding extraterrestrial life.',
-        url: 'https://example.com/3',
+        url: 'https://edition.cnn.com/',
         urlToImage: null,
         publishedAt: '2026-03-09T15:45:00Z',
         content: 'NASA has officially greenlit the Europa Deep Dive mission, an ambitious project to send a submersible probe beneath the ice crust of Jupiter\'s moon Europa. Scientists believe Europa\'s subsurface ocean could harbor conditions suitable for microbial life. The mission, scheduled for launch in 2031, will use advanced drilling technology to penetrate up to 5 kilometers of ice before deploying an autonomous underwater vehicle to explore the ocean beneath.'
@@ -36,7 +46,7 @@ const SAMPLE_ARTICLES = [
         source: { name: 'Al Jazeera' },
         title: 'Renewable Energy Investments Surge Globally',
         description: 'Global investments in renewable energy hit record highs as countries accelerate their transition from fossil fuels.',
-        url: 'https://example.com/4',
+        url: 'https://www.aljazeera.com/',
         urlToImage: null,
         publishedAt: '2026-03-09T12:00:00Z',
         content: 'Global investments in renewable energy have reached an unprecedented $1.2 trillion in the first quarter of 2026, according to a new report from the International Energy Agency. Solar and wind energy projects lead the charge, with significant contributions from emerging battery storage technologies. India, Brazil, and several African nations have emerged as major growth markets, while China continues to dominate solar panel manufacturing. Analysts predict renewable energy could account for 60% of global electricity generation by 2030.'
@@ -45,7 +55,7 @@ const SAMPLE_ARTICLES = [
         source: { name: 'TechCrunch' },
         title: 'Revolutionary Brain-Computer Interface Helps Paralyzed Patients',
         description: 'A new brain-computer interface technology allows paralyzed patients to control devices with unprecedented accuracy.',
-        url: 'https://example.com/5',
+        url: 'https://techcrunch.com/',
         urlToImage: null,
         publishedAt: '2026-03-08T18:20:00Z',
         content: 'Neuralink competitor Cortex Labs has unveiled a non-invasive brain-computer interface that enables paralyzed patients to control computers, smartphones, and robotic limbs with 98% accuracy. Unlike previous BCI systems, the new device requires no surgical implantation and can be set up in under 30 minutes. Clinical trials involving 200 patients showed remarkable results, with participants able to type, browse the internet, and even play video games using only their thoughts.'
@@ -54,7 +64,7 @@ const SAMPLE_ARTICLES = [
         source: { name: 'The Guardian' },
         title: 'Major Climate Agreement Reached at Emergency Summit',
         description: 'Nations agree on binding emissions targets after unprecedented climate events in 2025.',
-        url: 'https://example.com/6',
+        url: 'https://www.theguardian.com/international',
         urlToImage: null,
         publishedAt: '2026-03-08T09:15:00Z',
         content: 'Following a series of devastating climate events in 2025, including record-breaking heatwaves and catastrophic flooding, 195 nations have signed a landmark climate agreement with legally binding emissions reduction targets. The agreement mandates a 50% reduction in greenhouse gas emissions by 2030 and net-zero emissions by 2045, five years ahead of previous targets. A $500 billion climate adaptation fund was also established to help vulnerable nations cope with the effects of climate change.'
@@ -72,7 +82,7 @@ const CATEGORY_ARTICLES = {
             source: { name: 'ESPN' },
             title: 'Historic Victory in World Championship Finals',
             description: 'An underdog team claims victory in a thrilling championship final that captivated millions worldwide.',
-            url: 'https://example.com/7',
+            url: 'https://www.espn.com/',
             urlToImage: null,
             publishedAt: '2026-03-10T06:00:00Z',
             content: 'In one of the most dramatic sporting events of the decade, the underdog team pulled off a stunning upset in the World Championship finals. Trailing by a significant margin at halftime, the team mounted an incredible comeback driven by exceptional individual performances and tactical brilliance. The victory was celebrated by millions of fans worldwide and has been hailed as one of the greatest sporting moments in recent history.'
@@ -90,14 +100,15 @@ function getTodayKey() {
 /**
  * Read cached articles from localStorage (valid for today only)
  */
-function getCachedArticles(category) {
+function getCachedArticles(category, continent = 'all') {
     try {
-        const raw = localStorage.getItem(`news_cache_${category}`);
+        const raw = localStorage.getItem(`news_cache_v2_${category}_${continent}`);
         if (!raw) return null;
         const { date, articles } = JSON.parse(raw);
-        if (date === getTodayKey()) return articles;
-        // stale cache — different day
-        localStorage.removeItem(`news_cache_${category}`);
+        // Only return from cache if we have actual articles to avoid getting stuck on an empty cache
+        if (date === getTodayKey() && articles && articles.length > 0) return articles;
+        // stale cache — different day or empty
+        localStorage.removeItem(`news_cache_v2_${category}_${continent}`);
         return null;
     } catch {
         return null;
@@ -107,10 +118,10 @@ function getCachedArticles(category) {
 /**
  * Write articles to localStorage with today's date
  */
-function setCachedArticles(category, articles) {
+function setCachedArticles(category, continent, articles) {
     try {
         localStorage.setItem(
-            `news_cache_${category}`,
+            `news_cache_v2_${category}_${continent}`,
             JSON.stringify({ date: getTodayKey(), articles })
         );
     } catch {
@@ -119,35 +130,75 @@ function setCachedArticles(category, articles) {
 }
 
 /**
- * Fetch top headlines by category (cached daily)
+ * Generate fallback data of a consistent length (12) by repeating sample articles
  */
-export async function fetchTopHeadlines(category = 'general') {
+function getFallbackData(category, continent) {
+    let mockData = category === 'general' ? SAMPLE_ARTICLES : (CATEGORY_ARTICLES[category] || SAMPLE_ARTICLES.slice(0, 3));
+    if (!mockData || mockData.length === 0) mockData = SAMPLE_ARTICLES;
+
+    const count = 12; // Match the API pageSize
+    const extendedData = [];
+    while (extendedData.length < count + mockData.length) {
+        extendedData.push(...mockData);
+    }
+
+    if (continent !== 'all') {
+        const continentIndex = Object.keys(CONTINENT_COUNTRY_MAP).indexOf(continent);
+        const startIndex = continentIndex % mockData.length;
+        return extendedData.slice(startIndex, startIndex + count);
+    }
+    
+    return extendedData.slice(0, count);
+}
+
+/**
+ * Fetch top headlines by category and continent (cached daily)
+ */
+export async function fetchTopHeadlines(category = 'general', continent = 'all') {
     // If no valid API key, return sample data
     if (!API_KEY || API_KEY === 'YOUR_NEWSAPI_KEY_HERE') {
         await new Promise(r => setTimeout(r, 800)); // simulate loading
-        if (category === 'general') return SAMPLE_ARTICLES;
-        return CATEGORY_ARTICLES[category] || SAMPLE_ARTICLES.slice(0, 3);
+        return getFallbackData(category, continent);
     }
 
     // Check daily cache first
-    const cached = getCachedArticles(category);
+    const cached = getCachedArticles(category, continent);
     if (cached) return cached;
 
     try {
-        const response = await axios.get(`${BASE_URL}/top-headlines`, {
-            params: {
-                category,
-                language: 'en',
-                pageSize: 12,
-                apiKey: API_KEY
-            }
-        });
-        const articles = response.data.articles || [];
-        setCachedArticles(category, articles); // store for the rest of today
+        const country = CONTINENT_COUNTRY_MAP[continent];
+        const params = {
+            category,
+            pageSize: 12,
+            apiKey: API_KEY
+        };
+
+        if (country) {
+            params.country = country;
+            // Note: NewsAPI top-headlines endpoint often throws an error if
+            // you mix `country` and `language` in the same request depending
+            // on the exact combination.
+        } else {
+            params.language = 'en'; // default for global
+        }
+
+        const response = await axios.get(`${BASE_URL}/top-headlines`, { params });
+        let articles = response.data.articles || [];
+        
+        // If the API succeeds but returns 0 articles (often happens with specific country combinations like 'in' + specific categories on the free tier),
+        // fallback to the mock sample data to prevent the UI from showing empty states or loading indefinitely.
+        if (articles.length === 0) {
+            console.warn(`No articles found for ${category} and ${country}. Falling back to sample data.`);
+            articles = getFallbackData(category, continent);
+        }
+
+        setCachedArticles(category, continent, articles); // store for the rest of today
         return articles;
     } catch (error) {
         console.error('NewsAPI error:', error);
-        return SAMPLE_ARTICLES;
+        
+        // Final fallback in case of actual request error
+        return getFallbackData(category, continent);
     }
 }
 

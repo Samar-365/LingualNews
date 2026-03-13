@@ -382,7 +382,7 @@ export default function ArticlePage({ language }) {
                 {loading && (
                     <div className="loader">
                         <div className="loader__spinner"></div>
-                        <div className="loader__text">Processing with AI...</div>
+                        <div className="loader__text">Processing...</div>
                     </div>
                 )}
 

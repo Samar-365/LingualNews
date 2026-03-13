@@ -13,7 +13,7 @@ const CATEGORIES = [
     { id: 'health', label: 'Health' }
 ];
 
-export default function HomePage() {
+export default function HomePage({ continent }) {
     const [articles, setArticles] = useState([]);
     const [activeCategory, setActiveCategory] = useState('general');
     const [loading, setLoading] = useState(true);
@@ -22,13 +22,13 @@ export default function HomePage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        loadArticles(activeCategory);
-    }, [activeCategory]);
+        loadArticles(activeCategory, continent);
+    }, [activeCategory, continent]);
 
-    async function loadArticles(category) {
+    async function loadArticles(category, cont) {
         setLoading(true);
         try {
-            const data = await fetchTopHeadlines(category);
+            const data = await fetchTopHeadlines(category, cont);
             setArticles(data);
         } catch (err) {
             console.error('Failed to load articles:', err);
@@ -87,13 +87,13 @@ export default function HomePage() {
                                 className={`input-box__tab ${inputMode === 'url' ? 'input-box__tab--active' : ''}`}
                                 onClick={() => setInputMode('url')}
                             >
-                                📎 Paste URL
+                                Paste URL
                             </button>
                             <button
                                 className={`input-box__tab ${inputMode === 'text' ? 'input-box__tab--active' : ''}`}
                                 onClick={() => setInputMode('text')}
                             >
-                                ✏️ Paste Text
+                                Paste Text
                             </button>
                         </div>
 
