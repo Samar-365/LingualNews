@@ -156,7 +156,7 @@ export default function ArticlePage({ language }) {
         setError('');
         setLoading(true);
         try {
-            const result = await summarizeArticle(getArticleText(), mode);
+            const result = await summarizeArticle(getArticleText(), mode, targetLang);
             setSummary(result);
         } catch (err) {
             if (err.message === 'GEMINI_API_KEY_NOT_SET') {
@@ -174,7 +174,7 @@ export default function ArticlePage({ language }) {
         setError('');
         setLoading(true);
         try {
-            const result = await simplifyArticle(getArticleText());
+            const result = await simplifyArticle(getArticleText(), targetLang);
             setSimplified(result);
         } catch (err) {
             if (err.message === 'GEMINI_API_KEY_NOT_SET') {
