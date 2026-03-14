@@ -1,22 +1,22 @@
-# 🌍 LingualNews
+# LingualNews
 
 **LingualNews** is a dynamic web application built with React and Vite that provides users with global news, seamlessly translated and narrated in their preferred languages. It integrates advanced AI and translation APIs to break down language barriers in accessing global information.
 ![LingualNews Banner](public/assets/banner.png)
 
 ---
 
-## ✨ Features
+## Features
 
-- **🌐 Global News Retrieval**: Instantly fetch top news articles dynamically. Browse news globally or filter by continent.
-- **🗣️ Smart Translation**: Translate text using native translation capabilities powered by **Lingo.dev API** and **Google Gemini** into the user's preferred language.
-- **🔊 Text-to-Speech (TTS)**: Listen to translations and articles with high-quality, natural-sounding voice readouts.
-- **🧠 AI Summarization**: Get concise insights on news content using **Google Gemini** for intelligent processing.
-- **📄 Article Scraping**: Input any news URL or raw text to extract, summarize, and translate seamlessly.
-- **🎨 Sleek UI/UX**: Offers a highly responsive, modern "retro-style" dark theme for comfortable reading and intuitive navigation.
+- **Global News Retrieval**: Instantly fetch top news articles dynamically. Browse news globally or filter by continent.
+- **Smart Translation**: Translate text using native translation capabilities powered by **Lingo.dev API** and **Google Gemini** into the user's preferred language.
+- **Text-to-Speech (TTS)**: Listen to translations and articles with high-quality, natural-sounding voice readouts.
+- **AI Summarization**: Get concise insights on news content using **Google Gemini** for intelligent processing.
+- **Article Scraping**: Input any news URL or raw text to extract, summarize, and translate seamlessly.
+- **Sleek UI/UX**: Offers a highly responsive, modern "retro-style" dark theme for comfortable reading and intuitive navigation.
 
 ---
 
-## 🛠️ Installation
+## Installation
 
 ### Prerequisites
 1. **Node.js** (v18+ recommended) installed.
@@ -49,7 +49,7 @@
 
 ---
 
-## 📖 Usage
+## Usage
 
 1. **Start LingualNews**: The app will launch your web browser and load the global news homepage.
 2. **Select Content**:
@@ -57,16 +57,16 @@
    - Click on an article card to enter the dedicated reading view.
 3. **View Results**: The detailed news page will load the full context and original text.
 4. **Interact**:
-   - 🌎 **Translate**: Change the language dropdown to auto-translate the article.
-   - 🔊 **Read Aloud**: Click the Text-to-Speech buttons to listen to the news.
-   - 🔗 **Scrape URL**: Go to custom input to scrape external URLs and extract their content.
+   - **Translate**: Change the language dropdown to auto-translate the article.
+   - **Read Aloud**: Click the Text-to-Speech buttons to listen to the news.
+   - **Scrape URL**: Go to custom input to scrape external URLs and extract their content.
 5. **Settings Options**: Adjust language and continent filters directly from the responsive navigation bar.
 
 ---
 
-## 🏛️ System Architecture
+## System Architecture
 
-### 📊 Block Diagram
+### Block Diagram
 
 A high-level view of the system components.
 
@@ -83,7 +83,7 @@ graph LR
 
 ---
 
-### 🔄 Workflow
+### Workflow
 
 The simple process from fetching news to translating and listening.
 
@@ -102,7 +102,7 @@ flowchart TD
 
 ---
 
-## 💻 Tech Stack
+## Tech Stack
 
 | Component | Technology | Description |
 | :--- | :--- | :--- |
@@ -117,7 +117,7 @@ flowchart TD
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```bash
 lingualNews/
@@ -148,12 +148,12 @@ lingualNews/
 
 ---
 
-## 🔗 Links
+## Links
 
 Demo video: Coming Soon!
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
