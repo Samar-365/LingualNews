@@ -1,8 +1,7 @@
 # 🌍 LingualNews
 
 **LingualNews** is a dynamic web application built with React and Vite that provides users with global news, seamlessly translated and narrated in their preferred languages. It integrates advanced AI and translation APIs to break down language barriers in accessing global information.
-
-![LingualNews Banner](assets/banner.png)
+![LingualNews Banner](public/assets/banner.png)
 
 ---
 
