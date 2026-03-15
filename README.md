@@ -8,9 +8,9 @@
 ## Features
 
 - **Global News Retrieval**: Instantly fetch top news articles dynamically. Browse news globally or filter by continent.
-- **Smart Translation**: Translate text using native translation capabilities powered by **Lingo.dev API** and **Google Gemini** into the user's preferred language.
+- **Smart Translation**: Translate text using native translation capabilities powered by **Lingo.dev API** and **Groq API** into the user's preferred language.
 - **Text-to-Speech (TTS)**: Listen to translations and articles with high-quality, natural-sounding voice readouts.
-- **AI Summarization**: Get concise insights on news content using **Google Gemini** for intelligent processing.
+- **AI Summarization**: Get concise insights on news content using **Groq API** for intelligent processing.
 - **Article Scraping**: Input any news URL or raw text to extract, summarize, and translate seamlessly.
 - **Sleek UI/UX**: Offers a highly responsive, modern "retro-style" dark theme for comfortable reading and intuitive navigation.
 
@@ -20,7 +20,7 @@
 
 ### Prerequisites
 1. **Node.js** (v18+ recommended) installed.
-2. API Keys for **Google Gemini** and **Lingo.dev**.
+2. API Keys for **Groq API** and **Lingo.dev**.
 
 ### Steps
 1. **Clone the repository**:
@@ -37,7 +37,7 @@
 3. **Configure Environment Variables**:
    Create a `.env` file in the root directory and add your required API keys:
    ```env
-   VITE_GEMINI_API_KEY=your_gemini_api_key_here
+   VITE_GROQ_API_KEY=your_groq_api_key_here
    VITE_LINGO_API_KEY=your_lingodev_api_key_here
    ```
 
@@ -75,7 +75,7 @@ graph LR
     User((User)) --> UI[Frontend Interface]
     UI --> Fetch[News/Scraper Service]
     UI --> TTS[Text-to-Speech]
-    UI --> Gemini[AI Summarizer]
+    UI --> Groq[AI Summarizer]
     Fetch --> Content[Content Extraction]
     Content --> Trans[Translation API]
     Trans --> UI
@@ -111,7 +111,7 @@ flowchart TD
 | **Routing** | **React Router** | Seamless Single-Page App (SPA) navigation. |
 | **HTTP** | **Axios** | Robust Promise-based API handling. |
 | **Translation** | **Lingo.dev API** | Direct REST integrations for high-speed translations. |
-| **AI Engine** | **Google Gemini** | Advanced content extraction and intelligent summarization. |
+| **AI Engine** | **Groq API** | Advanced content extraction and intelligent summarization. |
 | **TTS Engine** | **Web TTS APIs** | Integrated dynamic speech synthesis. |
 | **Styling** | **Vanilla CSS** | Global dark-theme system overriding standard browser styles. |
 
