@@ -8,6 +8,12 @@ const LOCALE_MAP = {
     'English': 'en',
     'Hindi': 'hi',
     'Spanish': 'es',
+    'French': 'fr',
+    'German': 'de',
+    'Japanese': 'ja',
+    'Portuguese': 'pt',
+    'Swahili': 'sw',
+    'Maori': 'mi',
 };
 
 /**
