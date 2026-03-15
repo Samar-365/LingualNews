@@ -151,6 +151,7 @@ lingualNews/
 ## Links
 
 Demo video: https://youtu.be/Uxo2V0BHRbI
+
 Live demo: https://lingualnews.netlify.app/
 
 ---
